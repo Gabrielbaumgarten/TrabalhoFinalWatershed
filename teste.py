@@ -1,41 +1,42 @@
 import numpy as np
 import cv2
 import imutils
+from torch import floor
 
 INPUT_IMAGE =  './img.webp'
 
 def main ():
 
-    img = cv2.imread (INPUT_IMAGE, cv2.IMREAD_COLOR)
-    # img = img.astype(np.float)/255
-    cv2.imshow('Original', img)
+    # img = cv2.imread (INPUT_IMAGE, cv2.IMREAD_COLOR)
+    # # img = img.astype(np.float)/255
+    # cv2.imshow('Original', img)
+    img = cv2.imread("colourWall.jpg")
+    img = cv2.resize(img, (round(img.shape[0]/2), round(img.shape[1]/2)))
+    cImg = img.copy()
+    img = cv2.blur(img, (5, 5))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    
-    deslocado = cv2. pyrMeanShiftFiltering ( img, 21 , 51 )
-    cv2.imshow('Deslocado', deslocado)
+    scale = 1
+    delta = 0
+    ddepth = cv2.CV_16S
 
-    gray = cv2.cvtColor(deslocado, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-    cv2.imshow("Thresh", thresh)
+    grad_x = cv2.Sobel(gray, ddepth, 1, 0, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
+    grad_y = cv2.Sobel(gray, ddepth, 0, 1, ksize=3, scale=scale, delta=delta, borderType=cv2.BORDER_DEFAULT)
 
-    # find contours in the thresholded image
-    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    print("[INFO] {} unique contours found".format(len(cnts)))
-    # loop over the contours
-    for (i, c) in enumerate(cnts):
-        # draw the contour
-        ((x, y), _) = cv2.minEnclosingCircle(c)
-        cv2.putText(img, "#{}".format(i + 1), (int(x) - 10, int(y)),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        cv2.drawContours(img, [c], -1, (0, 255, 0), 2)
-    # show the output image
-    cv2.imshow("Image", img)
+    abs_grad_x = cv2.convertScaleAbs(grad_x)
+    abs_grad_y = cv2.convertScaleAbs(grad_y)
 
-    # cv2.imwrite ('02 - out.png', chormaKey*255)
+    grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
+    ret, thresh = cv2.threshold(grad, 10, 255, cv2.THRESH_BINARY_INV)
 
+    c, h = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+    areas = [cv2.contourArea(c1) for c1 in c]
+    maxAreaIndex = areas.index(max(areas))
+
+    cv2.drawContours(cImg, c, maxAreaIndex, (255, 0, 0), -1)
+    cv2.imshow('output', cImg)
     cv2.waitKey ()
     cv2.destroyAllWindows ()
 
