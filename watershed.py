@@ -6,58 +6,61 @@ from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 from scipy import ndimage
 
-INPUT_IMAGE =  './parede.jpg'
+INPUT_IMAGE =  './quadros.jpg'
 
 def main ():
 
     img = cv2.imread (INPUT_IMAGE, cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (floor(img.shape[0]/4), floor(img.shape[1]/4)))
+    # img = cv2.resize(img, (floor(img.shape[0]/2), floor(img.shape[1]/2)))
     # img = img.astype(np.float)/255
     cv2.imshow('Original', img)
 
     
-    deslocado = cv2. pyrMeanShiftFiltering ( img, 21 , 51 )
-    cv2.imshow('Deslocado', deslocado)
+    # gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # gray_img = cv2.medianBlur(gray_img, 7)
+    # _, filtered = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    # gray = cv2.cvtColor(deslocado, cv2.COLOR_BGR2GRAY)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    cv2.imshow("Gray", gray)
-    thresh = cv2.threshold(gray,100, maxval=255, type=cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-    cv2.imshow("Thresh", thresh)
+    # # Remove noise
+    # kernel = np.ones((3, 3), np.uint8)
+    # opening = cv2.morphologyEx(filtered.copy(), cv2.MORPH_OPEN, kernel, iterations = 2)
 
-    # cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL,
-    #         cv2.CHAIN_APPROX_SIMPLE)
-    # cv2.imshow("Contornos", cnts)
+    # # Find background area
+    # sure_bg = cv2.dilate(opening, kernel, iterations = 3)
 
-    # D = ndimage.distance_transform_edt(thresh)
-    # localMax = peak_local_max(D, indices=False, min_distance=20, labels=thresh)
+    # # Find foreground area
+    # dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
+    # _, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)
 
-    
-    # markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
-    # labels = watershed(-D, markers, mask=thresh)
-    # print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
-    
-    # for label in np.unique(labels):
-    #     # if the label is zero, we are examining the 'background'
-    #     # so simply ignore it
-    #     if label == 0:
-    #         continue
-    #     # otherwise, allocate memory for the label region and draw
-    #     # it on the mask
-    #     mask = np.zeros(gray.shape, dtype="uint8")
-    #     mask[labels == label] = 255
-    #     # detect contours in the mask and grab the largest one
-    #     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-    #         cv2.CHAIN_APPROX_SIMPLE)
-    #     cnts = imutils.grab_contours(cnts)
-    #     c = max(cnts, key=cv2.contourArea)
-    #     # draw a circle enclosing the object
-    #     ((x, y), r) = cv2.minEnclosingCircle(c)
-    #     cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-    #     cv2.putText(img, "#{}".format(label), (int(x) - 10, int(y)),
-    #         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    # # show the output image
-    # cv2.imshow("Output", img)
+    # # Find unknown region
+    # sure_fg = np.uint8(sure_fg)
+    # unknown = cv2.subtract(sure_bg, sure_fg)
+
+    sure_fg = cv2.imread ('./quadros_mascara.jpg', cv2.IMREAD_GRAYSCALE)
+    cv2.imshow('Mask', sure_fg)
+    # Add marker labels
+    # _, markers = cv2.connectedComponents(sure_fg)
+    markers = cv2.findContours(sure_fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # markers = markers + 1
+    # markers[unknown == 255] = 0
+
+    # Apply watershed
+    # markers = cv2.watershed(img, markers)
+    # img[markers == -1] = [255, 0, 0]
+
+    img_hsl = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+
+    for row in range(img.shape[0]):
+        for col in range(img.shape[1]):
+            if sure_fg[row][col]==0 :
+                # print('areas azul')
+                img_hsl[row][col] = [100 ,100,20]
+                # img_hsl[row][col] = [322 ,98,img_hsl[row][col][2]]
+
+    img_hsl = cv2.cvtColor(img_hsl, cv2.COLOR_HLS2BGR)
+    cv2.imshow('changeColor', img_hsl)
+
+
+    cv2.imshow('Camera', img)
 
 
     cv2.waitKey ()
