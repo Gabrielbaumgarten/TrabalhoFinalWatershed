@@ -6,7 +6,7 @@ from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 from scipy import ndimage
 
-INPUT_IMAGE =  './quadros.jpg'
+INPUT_IMAGE =  './colourWall.jpg'
 
 def main ():
 
