@@ -58,17 +58,21 @@ def main ():
     img_hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
 
     cor = colorchooser.askcolor(title = "Tkinter Color Chooser")
-    print(cor[0])
+    cor = cor[0]
+    cor = np.array([[[cor[0],cor[1],cor[2]]]], np.uint8)
+    cor = cv2.cvtColor(cor, cv2.COLOR_RGB2HLS)
+    '''print(cor[0])
     codigocor = str(cor[0])
     print(codigocor[12:15])
     a=colorsys.rgb_to_hls(int(codigocor[1:4]),int(codigocor[6:9]),int(codigocor[11:14]))
-    print(a)
+    print(a)'''
 
     for row in range(img.shape[0]):
         for col in range(img.shape[1]):
-            if labels[row][col]==1:
+            if labels[row][col]==7:
     #             # print('areas azul')
-                img_hls[row][col] = [a[0],a[1],a[2]]                
+                # img_hls[row][col] = [cor[0],img_hls[row][col][1],cor[2]]                
+                img_hls[row][col] = [cor[0][0][0],img_hls[row][col][1],cor[0][0][2]]                
                 #img[row][col] = cor[0]
     #             # img_hsl[row][col] = [322 ,98,img_hsl[row][col][2]]      
     img_hls = cv2.cvtColor(img_hls, cv2.COLOR_HLS2BGR)
