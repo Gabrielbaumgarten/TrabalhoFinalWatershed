@@ -15,8 +15,8 @@ ix,iy = -1,-1
 
 # Exemplos de imagens de parede
 # INPUT_IMAGE =  './quadros.jpg'
-# INPUT_IMAGE =  './parede_rosa.jpg'
-INPUT_IMAGE =  './parede_azul.jpg'
+INPUT_IMAGE =  './parede_rosa.jpg'
+# INPUT_IMAGE =  './parede_azul.jpg'
 # INPUT_IMAGE =  './parede_real.jpg'
 
 
@@ -62,7 +62,7 @@ img = cv2.imread (INPUT_IMAGE, cv2.IMREAD_COLOR)
 # Caso necessário, usado para redimencionar o tamanho da imagem
 # img = cv2.resize(img, (floor(img.shape[0]/6), floor(img.shape[1]/6)))
 img = cv2.resize(img, (floor(img.shape[0]/2), floor(img.shape[1]/2)))
-cv2.imshow('Original', img)
+
 
 # Reliza uma copia da imagem original para a definição do fundo
 sure_bg = img.copy()
@@ -83,10 +83,12 @@ while(1):
     elif k == 13 or k == 27:
         break
 
+cv2.destroyAllWindows ()
+
 # Pinta de branco tudo o que não foi selecionado na máscara
 sure_bg_mask = np.where(sure_bg_mask != 0, 255, 0)
 sure_bg_mask = sure_bg_mask.astype(np.uint8)
-cv2.imshow('Sure BG', sure_bg_mask)
+# cv2.imshow('Sure BG', sure_bg_mask)
 
 # Reliza uma copia da imagem original para a definição dos objetos de frente
 sure_fg = img.copy()
@@ -111,13 +113,15 @@ while(1):
 # Pinta de preto tudo o que não foi selecionado na máscara
 sure_fg_mask = np.where(sure_fg_mask != 255, 0, 255)
 sure_fg_mask = sure_fg_mask.astype(np.uint8)
-cv2.imshow('Sure FG', sure_fg_mask)
+# cv2.imshow('Sure FG', sure_fg_mask)
+
+cv2.destroyAllWindows ()
 
 # Faz a diferença entre o que se tem certeza que é fundo e
 # o que se tem certeza que é frente
 unknown = cv2.subtract(sure_bg_mask, sure_fg_mask)
 
-cv2.imshow('Unknown', unknown.astype(np.uint8))
+# cv2.imshow('Unknown', unknown.astype(np.uint8))
 
 # Acha os componentes conexos da imagem, colocando labels em cada um
 _, markers = cv2.connectedComponents(sure_fg_mask)
@@ -152,7 +156,7 @@ for row in range(img.shape[0]):
         if markers[row][col]==1 :
 
             # Tratamento para cores claras
-            if cor[0][0][1] > 125 and luminancia[row][col] <160:
+            if cor[0][0][1] > 125 and luminancia[row][col] <160 :
                 fator =0.5+1.5*((luminancia[row][col] - luminancia_min)/(luminancia_max - luminancia_min))
             
             # Tratamento para cores claras
@@ -167,6 +171,7 @@ for row in range(img.shape[0]):
 
 # Reconversão da imagem para BGR
 img_hls = cv2.cvtColor(img_hls, cv2.COLOR_HLS2BGR)
+cv2.imshow('Original', img)
 cv2.imshow('changeColor', img_hls)
 
 # Desenho dos contornos feitos pelo watershed
