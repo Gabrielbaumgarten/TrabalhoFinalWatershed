@@ -14,9 +14,9 @@ mode = True # if True, draw rectangle. Press 'm' to toggle to curve
 ix,iy = -1,-1
 
 # Exemplos de imagens de parede
-# INPUT_IMAGE =  './quadros.jpg'
+INPUT_IMAGE =  './quadros.jpg'
 # INPUT_IMAGE =  './parede_rosa.jpg'
-INPUT_IMAGE =  './parede_azul.jpg'
+# INPUT_IMAGE =  './parede_azul.jpg'
 # INPUT_IMAGE =  './parede_real.jpg'
 
 
@@ -60,8 +60,10 @@ def selectForeground(event,x,y,flags, param):
 img = cv2.imread (INPUT_IMAGE, cv2.IMREAD_COLOR)
 
 # Caso necessário, usado para redimencionar o tamanho da imagem
-# img = cv2.resize(img, (floor(img.shape[0]/6), floor(img.shape[1]/6)))
-img = cv2.resize(img, (floor(img.shape[0]/2), floor(img.shape[1]/2)))
+if INPUT_IMAGE == './parede_rosa.jpg' or INPUT_IMAGE == './parede_real.jpg':
+    img = cv2.resize(img, (floor(img.shape[0]/6), floor(img.shape[1]/6)))
+elif INPUT_IMAGE == './parede_azul.jpg':
+    img = cv2.resize(img, (floor(img.shape[0]/2), floor(img.shape[1]/2)))
 cv2.imshow('Original', img)
 
 # Reliza uma copia da imagem original para a definição do fundo
